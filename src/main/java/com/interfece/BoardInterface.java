@@ -1,10 +1,6 @@
 package com.interfece;
 
-import java.io.*;
-
 import org.springframework.http.*;
-
-import com.controller.exeption.*;
 import com.demoData.*;
 import com.dto.dto.*;
 
@@ -15,11 +11,11 @@ public interface BoardInterface {
 
   ResponseEntity<String> delete(BoardDto dto);
 
-  ResponseEntity<String> read(BoardDto dto);
+  ResponseEntity<BoardDto> read(CompanyDto dto);
 
-  ResponseEntity<ResponseTemplate> updateMember(CompanyDto dto);
+  ResponseEntity<BoardDto> updateMember(CompanyDto dto);
 
-  ResponseEntity<ResponseTemplate> removeMember(CompanyDto dto);
+  ResponseEntity<BoardDto> removeMember(CompanyDto dto);
 
   boolean validRoleType(Object role);
 

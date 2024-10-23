@@ -9,7 +9,7 @@ import lombok.*;
  */
 
 @Builder
-public record BoardRoleDto(String personId, String boardRole)
+public record BoardRoleDto(String id, String personId, String boardRole)
         implements RuledDtoInterface {
 
 }

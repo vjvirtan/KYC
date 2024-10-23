@@ -4,12 +4,15 @@ import java.util.*;
 
 import org.springframework.context.annotation.*;
 import org.springframework.http.*;
+
 import org.springframework.web.client.*;
+
 
 import com.enums.*;
 import com.validation.*;
 
 @Configuration
+@EnableAspectJAutoProxy
 public class DefaultConf {
 
   @Bean
@@ -38,4 +41,5 @@ public class DefaultConf {
     headers.setContentType(MediaType.APPLICATION_JSON);
     return headers;
   }
+
 }

@@ -15,8 +15,8 @@ import lombok.*;
 public record ValidationRule(
     boolean mandatory,
     boolean unique,
-    int max,
-    int min,
+    double max,
+    double min,
     String allowedChars,
     List<ValuePair<Integer, String>> subStrings) {
 
@@ -68,7 +68,6 @@ public record ValidationRule(
   }
 
   public <T extends Serializable> ValuePair<Boolean, ValidationError<String, String>> testMin(T value) {
-    System.out.println(" value :: " + value + " test min value: " + this.min);
     boolean response = value instanceof Number ? Double.parseDouble(value.toString()) >= this.min
         : value.toString().length() >= this.min;
 

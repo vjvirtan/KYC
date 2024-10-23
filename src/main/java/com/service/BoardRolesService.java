@@ -14,7 +14,7 @@ public class BoardRolesService {
   public BoardRole convertDtoToDao(BoardRoleDto dto) {
     return BoardRole.builder()
         .personId(dto.personId())
-        .role(dto.boardRole())
+        .boardRole(dto.boardRole())
         .build();
   }
 
@@ -22,7 +22,8 @@ public class BoardRolesService {
 
     return BoardRoleDto.builder()
         .personId(dao.getPersonId())
-        .boardRole(dao.getRole())
+        .boardRole(dao.getBoardRole())
+        .id(dao.getId())
         .build();
   }
 

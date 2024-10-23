@@ -8,6 +8,6 @@ import lombok.*;
 @ToString
 public class Owner extends UUIDGen {
 	private String personId;
-	private float percentage;
+	private double percentage;
 
 }

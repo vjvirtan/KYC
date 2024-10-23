@@ -12,8 +12,8 @@ import lombok.*;
 @Builder
 public record ValidationRuleDto(Boolean mandatory,
     Boolean unique,
-    Integer max,
-    Integer min,
+        double max,
+        double min,
     String allowedChars,
     List<ValuePair<Integer, String>> subStrings) {
 

@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.*;
 
 import lombok.*;
 
+@Setter
+@Getter
 @Document
 @Builder
 public class Owners extends UUIDGen {

@@ -6,9 +6,10 @@ import org.springframework.http.*;
 
 import com.dto.*;
 
+
 public interface FieldDictionaryInterface {
-  String BASE_URL = "http://localhost:8082";
-  static Map<String, FieldDictionaryDto> fieldDictionary = new HashMap<>();
+
+  static final Map<String, FieldDictionaryDto> fieldDictionary = new HashMap<>();
 
   FieldDictionaryDto getFieldDictionary(String field);
 

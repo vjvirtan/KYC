@@ -19,6 +19,7 @@ public class DemoService implements Demointerface {
   }
 
   public DemoPerson findPerson(String search) {
+
     if (persons == null) {
       createDemoData();
     }
@@ -29,10 +30,10 @@ public class DemoService implements Demointerface {
   }
 
   private void createDemoData() {
-    DemoCompany a = new DemoCompany("1", "7777777-1", "DEMO TISKAAMO AAA Oy ", "Cleanroad 2", "00110", "ESIMERKKI");
-    DemoCompany b = new DemoCompany("1", "8888888-1", "Dummy DIAMOND Oy ", "West coast street 22", "00110",
-        "ESIMERKKI");
-    DemoCompany c = new DemoCompany("1", "9999999-1", "REAL DEMO DUMMIES Oy ", "Demokatu 222", "00110", "ESIMERKKI");
+    DemoCompany a = new DemoCompany("1", "7777777-1", "Demo Tiskaamo Oy ", "Cleanroad 2", "00110", "Gotham");
+    DemoCompany b = new DemoCompany("1", "8888888-1", "Dummy Diamond Oy ", "West coast 22", "00110",
+        "Gotham");
+    DemoCompany c = new DemoCompany("1", "9999999-1", "Real Sky Shadow Oy ", "Pickard Street 222", "00110", "Gotham");
     companies = new HashMap<>();
     for (DemoCompany comp : Arrays.asList(a, b, c)) {
       companies.put(comp.name(), comp);
@@ -45,10 +46,11 @@ public class DemoService implements Demointerface {
 
     Set<Locale> lSet = new HashSet<>();
     lSet.add(Locale.of("fi", "FI"));
-    DemoPerson aa = new DemoPerson("010101AXXXX", "Eetu", "Esimerkki", lSet);
-    DemoPerson bb = new DemoPerson("020202AXXXX", "Elina", "Esimerkki", lSet);
+    DemoPerson aa = new DemoPerson("010101AXXXX", "Eetu", "Rautanen", lSet);
+    DemoPerson bb = new DemoPerson("020202AXXXX", "Elina", "Siir", lSet);
+    lSet.clear();
     lSet.add(Locale.of("en", "EN"));
-    DemoPerson cc = new DemoPerson("030303-XXXX", "Eerika", "Example", lSet);
+    DemoPerson cc = new DemoPerson("030303-XXXX", "Eerika", "Nemo", lSet);
     lSet.add(Locale.of("se", "SE"));
     DemoPerson dd = new DemoPerson("040404AXXXX", "Erik", "Exempel", lSet);
 

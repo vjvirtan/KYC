@@ -18,17 +18,13 @@ public record Validation<T>(Class<T> dataClass) {
   public Validation(Class<T> dataClass) {
     this.dataClass = dataClass;
     String newClassName = dataClass.getSimpleName() + "Rules";
-    System.out.println(" tuuu ");
     try {
       Class<?> testClass = Class.forName("com.temp." + newClassName);
       if (testClass != null) {
-        System.out.println(" class ei ole tyhjä ... validation !!!");
         return;
       }
     } catch (ClassNotFoundException e) {
-      System.out.println(" class not found testi!!!");
     }
-    System.out.println(" testclass status !!!!!!!!!!!!!!!!!!!!!!! ");
     StringBuilder classBuid = new StringBuilder();
     String[] parts = constructClassElements("builder");
 
@@ -59,7 +55,6 @@ public record Validation<T>(Class<T> dataClass) {
     try (FileWriter fw = new FileWriter(
         "src/main/java/com/temp/" + newClassName + ".java")) {
       fw.write(classBuid.toString());
-      System.out.println(" EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ");
     } catch (IOException e) {
       e.printStackTrace();
     }

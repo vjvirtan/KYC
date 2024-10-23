@@ -1,13 +1,10 @@
 package com.service;
 
-import java.io.*;
 import java.util.*;
 import java.util.stream.*;
 
 import org.springframework.http.*;
 import org.springframework.stereotype.*;
-
-import com.controller.exeption.*;
 import com.dao.*;
 import com.demoData.*;
 import com.dto.dto.*;
@@ -19,7 +16,7 @@ import lombok.*;
 @RequiredArgsConstructor
 @Service
 public class BoardService implements BoardInterface {
-
+  // TODO::
   private final ValidationInterface validationInterface;
   private final BoardRepository boardRepository;
   private final BoardRolesService boardRolesService;
@@ -67,78 +64,84 @@ public class BoardService implements BoardInterface {
   }
 
   @Override
-  public ResponseEntity<String> read(BoardDto dto) {
+  public ResponseEntity<BoardDto> read(CompanyDto dto) {
     Optional<Board> board = this.boardRepository.findByBusinessId(dto.businessId());
     if (board.isPresent()) {
-      Board dao = board.get();
       return new ResponseEntity<>(BoardDto.builder()
-          .businessId(dao.getBusinessId())
-          .boardRoles(this.boardRolesService.convertBoardMembersToDto(dao.getRoles()))
-          .build().toString(), HttpStatus.OK);
+          .businessId(board.get().getBusinessId())
+          .id(board.get().getId())
+          .boardRoles(this.boardRolesService.convertBoardMembersToDto(board.get().getRoles()))
+          .build(), HttpStatus.OK);
     } else {
-      return new ResponseEntity<>(dto.businessId() + " have no board members. ", HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(BoardDto.builder().build(), HttpStatus.OK);
     }
+
   }
 
+  // !!!!!!!!!!!!!!!!!!!! UPDATE BOARD !!!!!!!!!!!!!!!!!!!!!!
   @Override
-  public ResponseEntity<ResponseTemplate> updateMember(CompanyDto dto) {
-    if (!validRoleType(dto.info())) {
-      return new ResponseEntity<>(ResponseTemplate.builder().valid(false).message("ROLE NAMING INVALID").build(),
-          HttpStatus.NOT_ACCEPTABLE);
+  public ResponseEntity<BoardDto> updateMember(CompanyDto dto) {
+    if (!validRoleType(dto.boardRole())) {
+      return new ResponseEntity<>(BoardDto.builder().build(), HttpStatus.NOT_ACCEPTABLE);
     }
 
     Optional<Board> board = this.boardRepository.findByBusinessId(dto.businessId());
 
-    if (board.isEmpty()) {
+    if (dto.addRemove()) {
+      if (board.isEmpty()) {
+        ArrayList<BoardRoleDto> roles = new ArrayList<>();
+        roles.add(BoardRoleDto.builder().personId(dto.personId()).boardRole(dto.boardRole()).build());
+        create(BoardDto.builder()
+            .businessId(dto.businessId())
+            .boardRoles(roles)
+            .build());
+      } else {
+        // TODO:IF ALLREADY EXISTS, SOME ERROR HAS HAPPENED
 
-      create(BoardDto.builder().businessId(dto.businessId()).boardRoles(
-          dto.info().stream().map(l -> BoardRoleDto.builder().personId(dto.personId()).boardRole(l).build())
-              .collect(Collectors.toCollection(ArrayList::new)))
-          .build());
-    } else {
-      Board dao = board.get();
-      ArrayList<BoardRole> replaseRoles = new ArrayList<>();
-      // REMOVE PERSON FIRST
-      for (BoardRole br : dao.getRoles()) {
-        if (!br.getPersonId().equals(dto.personId())) {
-          replaseRoles.add(br);
+        if (!this.boardRepository.existsByBoardRoleAndPersonId(dto.businessId(), dto.personId(), dto.boardRole())) {
+          board.get().getRoles().add(BoardRole.builder().personId(dto.personId()).boardRole(dto.boardRole()).build());
+          this.boardRepository.save(board.get());
+        } else {
+          System.out.println(" IF ROLE AND PERSON ID MACH HERE; ");
         }
       }
-      // THEN ADD PERSON ROLES
-      dto.info().forEach(e -> replaseRoles.add(BoardRole.builder().personId(dto.personId()).role(e).build()));
-      dao.setRoles(replaseRoles);
-      this.boardRepository.save(dao);
 
+    } else {
+
+      var b = this.boardRepository.findByBusinessId(dto.businessId());
+
+      if (b.isPresent()) {
+        ArrayList<BoardRole> updatedRoles = new ArrayList<>();
+        updatedRoles = b.get().getRoles().stream().filter(f -> !f.getId().equals(dto.id()))
+            .collect(Collectors.toCollection(ArrayList::new));
+        b.get().setRoles(updatedRoles);
+        this.boardRepository.save(b.get());
+      }
     }
 
-    return new ResponseEntity<>(ResponseTemplate.builder()
-        .message(read(BoardDto.builder().businessId(dto.businessId()).build()).toString())
-        .valid(true)
+    board = this.boardRepository.findByBusinessId(dto.businessId());
+    return new ResponseEntity<>(BoardDto.builder()
+        .businessId(dto.businessId())
+        .boardRoles(this.boardRolesService.convertBoardMembersToDto(board.get().getRoles()))
         .build(), HttpStatus.OK);
   }
 
   // TODO: PUT END DATE FOR ROLE, NOT REMOVE
   @Override
-  public ResponseEntity<ResponseTemplate> removeMember(CompanyDto dto) {
+  public ResponseEntity<BoardDto> removeMember(CompanyDto dto) {
     Optional<Board> board = this.boardRepository.findByBusinessId(dto.businessId());
     if (board.isEmpty()) {
-      return new ResponseEntity<>(ResponseTemplate.builder().message("No board for " + dto.businessId()).build(),
+      return new ResponseEntity<>(BoardDto.builder().build(),
           HttpStatus.BAD_REQUEST);
     }
     Board dao = board.get();
-    dao.setRoles(dao.getRoles().stream().filter(role -> {
-      if (!role.getPersonId().equals(dto.personId())) {
-        return true;
-      } else {
-        for (String info : dto.info()) {
-          return !info.equals(role.getRole());
-        }
-      }
-      return true;
-    }).collect(Collectors.toCollection(ArrayList::new)));
-
-    return new ResponseEntity<>(ResponseTemplate.builder().valid(true).message(" these are mess :D").build(),
-        HttpStatus.BAD_REQUEST);
+    dao.setRoles(dao.getRoles().stream().filter(role -> !role.getPersonId().equals(dto.personId()))
+        .collect(Collectors.toCollection(ArrayList::new)));
+    this.boardRepository.save(dao);
+    return new ResponseEntity<>(BoardDto.builder()
+        .businessId(dto.businessId())
+        .boardRoles(this.boardRolesService.convertBoardMembersToDto(board.get().getRoles()))
+        .build(), HttpStatus.OK);
   }
 
   @SuppressWarnings("unchecked")
@@ -151,7 +154,7 @@ public class BoardService implements BoardInterface {
     } else if (roleOrRoles instanceof ArrayList) {
       ArrayList<Object> lista = (ArrayList<Object>) roleOrRoles;
       for (int i = 0; i < lista.size(); i++) {
-        System.out.println(lista.get(i).toString());
+
         if (!testRole(lista.get(i).toString())) {
           return false;
         }
@@ -165,8 +168,8 @@ public class BoardService implements BoardInterface {
 
   private boolean testRole(String role) {
     for (BoardRolesEnum e : BoardRolesEnum.values()) {
-      System.out.println("testing " + e.getValue().toLowerCase() + "  " + role.toLowerCase());
-      if (e.getValue().equals(role)) {
+
+      if (e.getValue().toLowerCase().equals(role.toLowerCase())) {
         return true;
       }
     }

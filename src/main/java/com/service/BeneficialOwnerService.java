@@ -1,15 +1,18 @@
 package com.service;
 
 import java.util.*;
+import java.util.stream.*;
+
 import org.springframework.http.*;
 import org.springframework.stereotype.*;
-
 import com.dao.*;
+import com.demoData.*;
 import com.dto.dto.*;
 import com.interfece.*;
 import com.repositories.*;
 
 import lombok.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -24,16 +27,8 @@ public class BeneficialOwnerService implements BeneficialOwnerInterface {
   }
 
   @Override
-  public ResponseEntity<String> update(BeneficialOwnersDto dto) {
-    this.validationInterface.validateFields(dto);
-    Optional<BeneficialOwners> dao = this.beneficialOwnersRepository.findById(dto.id());
-    if (dao.isPresent()) {
-      BeneficialOwners d = dao.get();
-      d.setBeneficiaries(dto.beneficiaries().stream().map(e -> convertDtoToDao(e)).toList());
-      this.beneficialOwnersRepository.save(d);
-    }
-
-    return new ResponseEntity<>(dto.toString(), HttpStatus.OK);
+  public ResponseEntity<BeneficialOwnersDto> update(CompanyDto dto) {
+    throw new UnsupportedOperationException("Unimplemented method 'delete'");
 
   }
 
@@ -44,9 +39,14 @@ public class BeneficialOwnerService implements BeneficialOwnerInterface {
   }
 
   @Override
-  public ResponseEntity<String> read(BeneficialOwnersDto dto) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'read'");
+  public ResponseEntity<BeneficialOwnersDto> read(CompanyDto dto) {
+    Optional<BeneficialOwners> owners = this.beneficialOwnersRepository.findByBusinessId(dto.businessId());
+    if (owners.isPresent()) {
+      return new ResponseEntity<>(convertBeneficialOwnersDaoTo(owners.get()), HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>(BeneficialOwnersDto.builder().build(), HttpStatus.OK);
+    }
+    // throw new NoSuchElementException();
   }
 
   @Override
@@ -56,6 +56,7 @@ public class BeneficialOwnerService implements BeneficialOwnerInterface {
   }
 
   @Override
+
   public BeneficialOwner convertDtoToDao(BenefiaryOwnerDto dto) {
     return BeneficialOwner.builder()
         .personId(dto.personId())
@@ -84,6 +85,31 @@ public class BeneficialOwnerService implements BeneficialOwnerInterface {
         .businessId(dto.businessId())
         .beneficiaries(dto.beneficiaries().stream().map(d -> convertDtoToDao(d)).toList())
         .build();
+  }
+
+  @Override
+  public ResponseEntity<BeneficialOwnersDto> updateMember(CompanyDto dto) {
+    Optional<BeneficialOwners> owners = this.beneficialOwnersRepository.findByBusinessId(dto.businessId());
+    if (owners.isEmpty()) {
+      this.beneficialOwnersRepository.save(BeneficialOwners.builder()
+          .businessId(dto.businessId())
+          .beneficiaries(Arrays.asList(BeneficialOwner.builder()
+              .personId(dto.personId())
+
+              .build()))
+          .build());
+    } else {
+      List<BeneficialOwner> newOwnerList = owners.get().getBeneficiaries().stream()
+          .filter(owner -> !owner.getPersonId().equals(dto.personId()))
+          .collect(Collectors.toCollection(ArrayList::new));
+      if (dto.addRemove()) {
+        newOwnerList.add(BeneficialOwner.builder().personId(dto.personId()).build());
+      }
+      owners.get().setBeneficiaries(newOwnerList);
+      this.beneficialOwnersRepository.save(owners.get());
+    }
+
+    return read(dto);
   }
 
 }

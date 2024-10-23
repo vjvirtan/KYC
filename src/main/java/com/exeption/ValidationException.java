@@ -2,16 +2,19 @@ package com.exeption;
 
 import java.util.*;
 
-import com.exeption.valid.*;
-
 import lombok.*;
 
 @Getter
-public class ValidationException extends RuntimeException {
-  private List<ValidationError<?, ?>> errorMessages;
 
-  public ValidationException(List<ValidationError<?, ?>> messages) {
+public class ValidationException extends RuntimeException {
+  private List<Response> errorResponse;
+
+  public ValidationException(List<Response> responses) {
     super("Errors has occured: ");
-    this.errorMessages = messages;
+    if (errorResponse == null) {
+      errorResponse = responses;
+    }
+
   }
+
 }
